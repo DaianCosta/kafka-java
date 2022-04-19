@@ -1,0 +1,35 @@
+docker exec kafka \
+kafka-topics --bootstrap-server broker:9092 \
+             --create \
+             --topic quickstart
+
+
+docker exec --interactive --tty broker \
+kafka-console-consumer --bootstrap-server broker:9092 \
+                       --topic ECOMMERCE_NEW_ORDER \
+                       --from-beginning
+
+docker exec --interactive --tty broker \
+kafka-topics --bootstrap-server broker:9092 --list
+
+
+
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    depends_on:
+      - broker
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server broker:29092--list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server broker:9092 --create --if-not-exists --topic ECOMMERCE_NEW_ORDER --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:9092 --create --if-not-exists --topic ECOMMERCE_SEND_EMAIL --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:9092 --create --if-not-exists --topic ECOMMERCE_LOG --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server broker:9092 --list
+      "
